@@ -6,7 +6,7 @@
    For player 1,  the player vertical count should be the less the better, and opponent vertical count should be the less the better, too (Since that implies player is close to top but opponent is far from bottom).
 
 ### 2. Horizontal distribution:
-   Players seldom prefer any piece alone, but always stay in the center results in stuck situation. So the program says it is best to stay a distance from the center. To avoid such a jam, we assess their horizontal distribution.## B. Algorithm design & Alpha-beta pruning
+   Players seldom prefer any piece alone, but always stay in the center results in stuck situation. So the program says it is best to stay a distance from the center. To avoid such a jam, we assess their horizontal distribution.
 
 ## B. Algorithm design & Alpha-beta pruning
 
