@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue"
-import { getNext, Move } from "./ai"
+import { copy, getNext, Move } from "./ai"
 
 const board = ref(new Array(17))
 
@@ -31,13 +31,7 @@ for (let i = 0; i < 17; i++) {
   }
 }
 
-function copy(from, to) {
-  for (let i = 0; i < 17; i++) {
-    for (let j = 0; j < 17; j++) {
-      to[i][j] = from[i][j]
-    }
-  }
-}
+
 
 function checkEqual(a, b) {
   for (let i = 0; i < 17; i++) {

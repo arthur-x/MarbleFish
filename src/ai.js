@@ -6,20 +6,36 @@ export function Move(state) {
     let max_score = 0
     let path = []
     for (let move in legalmoves) {
-        let arr = move.split(',')
-        let pick = [Number(arr[0]), Number(arr[1])]
-        let dest = [Number(arr[2]), Number(arr[3])]
-        state[pick[0]][pick[1]] = 0
-        state[dest[0]][dest[1]] = 1
-        let s = score(state, 1)
-        state[pick[0]][pick[1]] = 1
-        state[dest[0]][dest[1]] = 0
+        let s = score(step(state, move))
         if (s > max_score) {
             max_score = s
             path = legalmoves[move]
         }
     }
     return path
+}
+
+export function copy(from, to) {
+    for (let i = 0; i < 17; i++) {
+      for (let j = 0; j < 17; j++) {
+        to[i][j] = from[i][j]
+      }
+    }
+  }
+
+function step(state, move) {
+    let new_state = new Array(17)
+    for (let i = 0; i < 17; i++) {
+        new_state[i] = new Array(17).fill(0)
+    }
+    copy(state, new_state)
+    let arr = move.split(',')
+    let pick = [Number(arr[0]), Number(arr[1])]
+    let dest = [Number(arr[2]), Number(arr[3])]
+    let temp = state[pick[0]][pick[1]]
+    new_state[pick[0]][pick[1]] = 0
+    new_state[dest[0]][dest[1]] = temp
+    return new_state
 }
 
 function getLegalMoves(state, player) {
@@ -87,15 +103,15 @@ export function getNext(state, x, y, first) {
     return {crawls, jumps}
 }
 
-function score(state, player) {
+function score(state) {
     let player_status = []
     let opponent_status = []
     for (let i = 0; i < 17; i++) {
         for (let j = 0; j < 17; j++) {
-            if (state[i][j] === player) {
+            if (state[i][j] === 1) {
                 player_status.push([i, j])
             }
-            else if (state[i][j] === 3-player) {
+            else if (state[i][j] === 2) {
                 opponent_status.push([i, j])
             } 
         }
@@ -112,14 +128,7 @@ function score(state, player) {
         opponent_vertical_count += position[0]
         opponent_horizontal_count += Math.abs(Math.abs(position[1]-8)/2-1)
     }
-    if (player === 2) {
-       if (player_vertical_count === 0) return 1000
-       if (opponent_vertical_count === 140) return -1000
-       else return 280-(player_vertical_count + opponent_vertical_count)+(opponent_horizontal_count - player_horizontal_count)/2
-    }
-    else {
-       if (player_vertical_count === 140) return 1000
-       if (opponent_vertical_count === 0) return -1000
-       else return (player_vertical_count + opponent_vertical_count)+(opponent_horizontal_count - player_horizontal_count)/2
-    }
+    if (player_vertical_count === 140) return 1000
+    if (opponent_vertical_count === 0) return -1000
+    else return (player_vertical_count+opponent_vertical_count)+(opponent_horizontal_count-player_horizontal_count)/2
 }
