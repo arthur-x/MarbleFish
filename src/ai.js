@@ -3,13 +3,19 @@
 export function Move(state) {
     let legalmoves = getLegalMoves(state, 1)
     // greedy
-    let max_advance = 0
+    let max_score = 0
     let path = []
     for (let move in legalmoves) {
         let arr = move.split(',')
-        let advance = Number(arr[2]) - Number(arr[0])
-        if (advance > max_advance) {
-            max_advance = advance
+        let pick = [Number(arr[0]), Number(arr[1])]
+        let dest = [Number(arr[2]), Number(arr[3])]
+        state[pick[0]][pick[1]] = 0
+        state[dest[0]][dest[1]] = 1
+        let s = score(state, 1)
+        state[pick[0]][pick[1]] = 1
+        state[dest[0]][dest[1]] = 0
+        if (s > max_score) {
+            max_score = s
             path = legalmoves[move]
         }
     }
@@ -79,4 +85,41 @@ export function getNext(state, x, y, first) {
       }
     }
     return {crawls, jumps}
+}
+
+function score(state, player) {
+    let player_status = []
+    let opponent_status = []
+    for (let i = 0; i < 17; i++) {
+        for (let j = 0; j < 17; j++) {
+            if (state[i][j] === player) {
+                player_status.push([i, j])
+            }
+            else if (state[i][j] === 3-player) {
+                opponent_status.push([i, j])
+            } 
+        }
+    }
+    let player_vertical_count = -20
+    let opponent_vertical_count = -20
+    let player_horizontal_count = 0
+    let opponent_horizontal_count = 0
+    for (let position of player_status) {
+        player_vertical_count += position[0]
+        player_horizontal_count += Math.abs(Math.abs(position[1]-8)/2-1)
+    }
+    for (let position of opponent_status) {
+        opponent_vertical_count += position[0]
+        opponent_horizontal_count += Math.abs(Math.abs(position[1]-8)/2-1)
+    }
+    if (player === 2) {
+       if (player_vertical_count === 0) return 1000
+       if (opponent_vertical_count === 140) return -1000
+       else return 280-(player_vertical_count + opponent_vertical_count)+(opponent_horizontal_count - player_horizontal_count)/2
+    }
+    else {
+       if (player_vertical_count === 140) return 1000
+       if (opponent_vertical_count === 0) return -1000
+       else return (player_vertical_count + opponent_vertical_count)+(opponent_horizontal_count - player_horizontal_count)/2
+    }
 }
