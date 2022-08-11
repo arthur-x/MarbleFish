@@ -1,4 +1,4 @@
-name: Build and Deploy to Pages
+name: Deploy to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_deploy:
+  deploy:
       environment:
         name: github-pages
         url: ${{ steps.deployment.outputs.page_url }}
@@ -28,13 +28,6 @@ jobs:
 
       steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14.x
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v1
       - name: Upload artifact
