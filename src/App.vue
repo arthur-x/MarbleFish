@@ -1,12 +1,14 @@
 <script setup>
 import { ref, computed } from "vue"
-import { copy, getNext, Move } from "./ai"
+import { copy, getNext, act } from "./ai"
 
 const board = ref(new Array(17))
 
 const selected = ref([0, 0]) // the current marble being moved
 
-const gameState = ref(2) // 1: AI's move, 2: player's move
+const gameState = ref(2) // 1: AI's move, 2: player's move, 3: AI win, 4: player win, 5: draw
+
+const round = ref(1)
 
 var snapshot = new Array(17)
 var initial = new Array(17)
@@ -31,8 +33,6 @@ for (let i = 0; i < 17; i++) {
   }
 }
 
-
-
 function checkEqual(a, b) {
   for (let i = 0; i < 17; i++) {
     for (let j = 0; j < 17; j++) {
@@ -42,15 +42,30 @@ function checkEqual(a, b) {
   return true
 }
 
+function checkWin(state) {
+  let result = {ai: 1, player: 1}
+  for (let i = 0; i < 17; i++) {
+    for (let j = 0; j < 17; j++) {
+      if (i < 4 && state[i][j] !== -1 && state[i][j] !== 2) {
+        result['player'] = 0
+      }
+      if (i > 12 && state[i][j] !== -1 && state[i][j] !== 1) {
+        result['ai'] = 0
+      }
+    }
+  }
+  return result
+}
+
 copy(board.value, snapshot)
 copy(board.value, initial)
 
 const reset_disable = computed(_=> {
-  if (gameState.value === 1) return true
+  if (gameState.value !== 2) return true
   return selected.value[0] === 0 && selected.value[1] === 0
 })
 const submit_disable = computed(_=> {
-  if (gameState.value === 1) return true
+  if (gameState.value !== 2) return true
   for (let i = 0; i < 17; i++) {
     for (let j = 0; j < 17; j++) {
       if (snapshot[i][j] === 2 && snapshot[i][j] !== board.value[i][j]) return false
@@ -62,9 +77,13 @@ const restart_disable = computed(_=> {
   if (gameState.value === 1) return true
   return checkEqual(board.value, initial)
 })
+const aiWin = computed(_=>{return gameState.value === 3})
+const playerWin = computed(_=>{return gameState.value === 4})
+const draw = computed(_=>{return gameState.value === 5})
+const displayRound = computed(_=>{return gameState.value === 1 || gameState.value === 2})
 
 function clickable(cell) {
-  if (gameState.value === 1) return false
+  if (gameState.value !== 2) return false
   return cell === 3 || cell === 4 || (cell === 2 && selected.value[0] === 0 && selected.value[1] === 0)  
 }
 
@@ -112,6 +131,8 @@ function clickHole(x, y, isPlayer) {
 
 function restart() {
   selected.value = [0, 0]
+  gameState.value = 2
+  round.value = 1
   copy(initial, board.value)
   copy(initial, snapshot)
 }
@@ -128,22 +149,30 @@ function sleep(time) {
 async function submit() {
   clearNext()
   selected.value = [0, 0]
+  copy(board.value, snapshot)
+  let checkfirst = checkWin(snapshot)
   gameState.value = 1
   // call AI to move
-  copy(board.value, snapshot)
-  let path = Move(snapshot)
-  await executePath(path)
-  gameState.value = 2
-  copy(board.value, snapshot)
-}
-
-async function executePath(path) {
+  let {path, killmove} = act(snapshot)
+  if (checkfirst['player'] && !killmove) {
+    gameState.value = 4
+    return
+  }
   for (let move of path) {
     clickHole(move[0], move[1], false)
-    await sleep(1000)
+    await sleep(500)
   }
   clearNext()
   selected.value = [0, 0]
+  copy(board.value, snapshot)
+  let outcome = checkWin(snapshot)
+  if (outcome['player'] && outcome['ai']) gameState.value = 5
+  else if (outcome['ai']) gameState.value = 3
+  else if (outcome['player']) gameState.value = 4
+  else {
+    round.value += 1
+    gameState.value = 2
+  }
 }
 </script>
 
@@ -151,10 +180,10 @@ async function executePath(path) {
 <div style="display: flex">
 
 <div class="panel">
-  <p style="margin:0; text-align:start; font-size: 1.2em">
+  <p style="text-align:start; font-size: 1.2em">
   Pick a <span style="color:rgb(246, 101, 125)">marble</span> and move it to a <span style="color:silver">hole</span><br>
   <span style="color:#cf925c">reset</span> to reselect a marble<br>
-  <span style="color:#cf925c">submit</span> to finish your round<br>
+  <span style="color:#cf925c">submit</span> to end your turn<br>
   <span style="color:#cf925c">restart</span> to begin a new game<br>
   </p>
 </div>
@@ -167,6 +196,10 @@ async function executePath(path) {
 </div>
 
 <div class="panel">
+  <p style="font-size: 1.2em; color:#cf925c" v-show="displayRound">Round: {{ round }}</p>
+  <p style="font-size: 1.2em; color:#cf925c" v-show="aiWin">Defeat</p>
+  <p style="font-size: 1.2em; color:#cf925c" v-show="playerWin">Victory</p>
+  <p style="font-size: 1.2em; color:#cf925c" v-show="draw">Draw</p>
   <button @click="reset" :disabled="reset_disable">reset</button>
   <button @click="submit" :disabled="submit_disable">submit</button>
   <button @click="restart" :disabled="restart_disable">restart</button>
@@ -223,14 +256,14 @@ async function executePath(path) {
   display: flex;
   flex-direction: column;
   place-items: center;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 button {
   width: 100px;
-  height: 50px;
-  margin-top: 12px;
+  height: 45px;
+  margin-bottom: 8px;
   border-radius: 8px;
   border: transparent;
   font-size: 1.2em;

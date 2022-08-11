@@ -1,18 +1,44 @@
 // state is 2d array, given a state, the AI returns a series of moves
 // ([[x0, y0], [x1, y1], ..., [xn, yn]])
-export function Move(state) {
+export function act(state) {
     let legalmoves = getLegalMoves(state, 1)
-    // greedy
-    let max_score = 0
+    let queue = []
+    let b = 2000
+    let v = -2000
+    let depth = 2
     let path = []
     for (let move in legalmoves) {
-        let s = score(step(state, move))
-        if (s > max_score) {
-            max_score = s
-            path = legalmoves[move]
+        let child = step(state, move)
+        queue.push({'action': move, 'score': score(child), 'next': child})
+    }
+    queue.sort((a, b) => b['score']-a['score']) // large v -> small v
+    let killmove = (queue[0]['score'] === 1000)
+    for (let el of queue) {
+        let cur_v = alphabeta(2, el['next'], v, b, depth)
+        if (cur_v > v) {
+            v = cur_v
+            path = legalmoves[el['action']]
         }
     }
-    return path
+    return {path, killmove}
+}
+
+function alphabeta(player, state, a, b, depth) {
+    let v = score(state)
+    if (depth === 0 || v === 1000) return v
+    let legalmoves = getLegalMoves(state, player)
+    for (let move in legalmoves) {
+        let score = alphabeta(3-player, step(state, move), a, b, depth-1)
+        if (player === 1) {
+            if (score > a) a = score
+            if (a >= b) return a
+        }
+        else {
+            if (score < b) b = score
+            if (a >= b) return b
+        }
+    }
+    return player === 1 ? a : b
 }
 
 export function copy(from, to) {
@@ -128,7 +154,6 @@ function score(state) {
         opponent_vertical_count += position[0]
         opponent_horizontal_count += Math.abs(Math.abs(position[1]-8)/2-1)
     }
-    if (player_vertical_count === 140) return 1000
-    if (opponent_vertical_count === 0) return -1000
+    if (player_vertical_count === 120) return 1000
     else return (player_vertical_count+opponent_vertical_count)+(opponent_horizontal_count-player_horizontal_count)/2
 }
