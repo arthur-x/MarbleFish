@@ -1,7 +1,8 @@
-# Vue 3 + Vite
+# MarbleFish-A-Chinese-Checker-AI
+PLEASE NOTE: The original code of this repository has been moved under the `legacy` branch. Refer to readme there for a detailed algorithm design documentation.
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+MarbleFish is now remade as a web application. You can play it [here](https://arthur-x.github.io/MarbleFish-A-Chinese-Checker-AI/).
 
-## Recommended IDE Setup
+![Screenshot](screenshot.png)
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+The search depth of the web version is hardcoded as 2 to ensure a responsive play experience. However, you may find that beating it still requires some effort! 
