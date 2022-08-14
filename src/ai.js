@@ -3,25 +3,24 @@ onmessage = (ev) => {
     let {snapshot, depth} = ev.data
     let legalmoves = getLegalMoves(snapshot, 1)
     let queue = []
-    let start_depth = 4
+    let start_depth = depth - 2 // 2, 4, 6
     let v = 0
     for (let move in legalmoves) {
         let child = step(snapshot, move)
-        queue.push({'action': move, 'score': score(child), 'next': child})
+        queue.push({'action': move, 'score': 0, 'next': child})
     }
-    queue.sort((a, b) => b['score']-a['score']) // large v -> small v
     while ((start_depth <= depth) && (queue.length > 1)) {
         v = 0
         for (let i = 0; i < queue.length; i++) {
             let el = queue.shift()
-            let cur_v = alphabeta(2, el['next'], v, 1000, start_depth, 0)
+            let cur_v = alphabeta(2, el['next'], v, 1000, start_depth, 1)
             if (cur_v > v) v = cur_v
             el['score'] = cur_v
             queue.push(el)
         }
-        queue.sort((a, b) => b['score']-a['score'])
-        queue.splice(Math.round(queue.length/4)+1) // cut off tailing candidates for next depth search
-        start_depth += 1
+        queue.sort((a, b) => b['score']-a['score']) // large v -> small v
+        queue.splice(Math.round(queue.length/(2**start_depth))+1) // cut off tailing candidates for next depth search
+        start_depth += 2
     }
     postMessage({path: legalmoves[queue[0]['action']], v})
 }

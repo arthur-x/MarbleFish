@@ -7,7 +7,7 @@ const selected = ref([0, 0]) // the current marble being moved
 
 const gameState = ref(2) // 1: AI's move, 2: player's move, 3: AI win, 4: player win, 5: draw
 
-const depth = ref(4)
+const depth = ref(2)
 
 const value = ref(120)
 
@@ -35,9 +35,9 @@ for (let i = 0; i < 17; i++) {
 }
 
 function increaseDepth() {
-  depth.value = depth.value + 1
-  if (depth.value == 7) {
-    depth.value = 4
+  depth.value = depth.value + 2
+  if (depth.value == 8) {
+    depth.value = 2
   }
 }
 
@@ -217,27 +217,15 @@ async function execute(result) {
 }
 
 function showEmotion() {
-  if (gameState.value == 3) {
-    return 'sentiment_very_satisfied'
-  }
-  if (gameState.value == 4) {
-    return 'sentiment_very_dissatisfied'
-  }
-  if ((115 < value.value && value.value < 125) || gameState.value == 5) {
-    return 'sentiment_neutral'
-  }
-  else if (125 <= value.value && value.value < 135) {
-    return 'sentiment_satisfied'
-  }
-  else if (135 <= value.value && value.value < 1000) {
-    return 'mood'
-  }
-  else if (105 < value.value && value.value <= 115) {
-    return 'sentiment_dissatisfied'
-  }
-  else if (0 < value.value && value.value <= 105) {
-    return 'mood_bad'
-  }
+  if (gameState.value == 3) return 'sentiment_very_satisfied'
+  if (gameState.value == 4) return 'sentiment_very_dissatisfied'
+  if ((120 <= value.value && value.value < 125) || gameState.value == 5) return 'sentiment_neutral'
+  else if (125 <= value.value && value.value < 135) return 'sentiment_satisfied'
+  else if (135 <= value.value) return 'mood'
+  else if (115 <= value.value && value.value < 120) return 'sentiment_dissatisfied'
+  else if (110 <= value.value && value.value < 115) return 'mood_bad'
+  else if (105 <= value.value && value.value < 110) return 'sentiment_extremely_dissatisfied'
+  else if (value.value < 105) return 'sick'
 }
 </script>
 
@@ -245,7 +233,7 @@ function showEmotion() {
 <main style="display: flex">
 
 <div class="panel">
-  <button @click="increaseDepth" :disabled="difficulty_disable" style="margin-top: 129.5px"><span class="material-symbols-rounded">{{depth == 4 ? 'icecream' : depth == 5 ? 'fitness_center' : 'skull'}}</span></button>
+  <button @click="increaseDepth" :disabled="difficulty_disable" style="margin-top: 129.5px"><span class="material-symbols-rounded">{{depth == 2 ? 'icecream' : depth == 4 ? 'fitness_center' : 'skull'}}</span></button>
   <span class="material-symbols-rounded" style="margin-top: 87.1px; font-size: 55px">{{showEmotion()}}</span>
   <button @click="restart" :disabled="restart_disable" style="margin-top: 87.1px"><span class="material-symbols-rounded">refresh</span></button>
 </div>
@@ -259,8 +247,7 @@ function showEmotion() {
 
 <div class="panel">
   <button @click="reset" :disabled="reset_disable" style="margin-top: 129.5px"><span class="material-symbols-rounded">close</span></button>
-  <div class="thinkball" v-show="gameState == 1"><div class='water'></div></div>
-  <div class="thinkball" v-show="gameState != 1"><div class='idle'></div></div>
+  <div class="thinkball"><div :class="{water_fast: gameState == 1, water: gameState != 1}"></div></div>
   <button @click="submit" :disabled="submit_disable"><span class="material-symbols-rounded">done</span></button>
   
 </div>
@@ -357,8 +344,8 @@ button[disabled]:hover {
 }
 
 .idle {
-  width: 110%;
-  height: 10%;
+  width: 100%;
+  height: 8%;
   top: 0;
   left: 0;
   margin-top: 22px;
@@ -384,9 +371,9 @@ button[disabled]:hover {
   height: 150%;
   top: 0;
   left: 50%;
-  border-radius: 40%;
+  border-radius: 42%;
   background-color: white;
-  animation: real 5s linear infinite;
+  animation: real 8s linear infinite;
 }
 
 @keyframes real {
@@ -408,7 +395,7 @@ button[disabled]:hover {
   left: 50%;
   border-radius: 45%;
   background-color: #fccf79;
-  animation: virtual 6s linear infinite;
+  animation: virtual 10s linear infinite;
 }
 
 @keyframes virtual {
@@ -419,5 +406,40 @@ button[disabled]:hover {
   100% {
     transform: translate(-50%, -58%) rotate(360deg);
   }
+}
+
+.water_fast {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  opacity: 100%;
+  overflow: hidden;
+}
+
+.water_fast::after {
+  content: '';
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  top: 0;
+  left: 50%;
+  border-radius: 42%;
+  background-color: white;
+  animation: real 1.6s linear infinite;
+}
+
+.water_fast::before {
+  content: '';
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  top: 0;
+  left: 50%;
+  border-radius: 45%;
+  background-color: #fccf79;
+  animation: virtual 2s linear infinite;
 }
 </style>
