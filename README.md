@@ -1,4 +1,4 @@
-# MarbleFish: A Chinese-Checker AI
+# MarbleFish: A Chinese Checkers AI
 
 PLEASE NOTE: The original code of this repository has been moved under the `legacy` branch. Refer to readme there for a detailed algorithm design documentation.
 
