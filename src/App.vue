@@ -240,14 +240,17 @@ function showEmotion() {
 
 <div class="board">
   <div v-for="(row, x) in board" style="display: flex; margin-bottom: 4.64px;">
-    <div v-for="(cell, y) in row" class="void" :class="{hole: cell>=0, ai: cell==1, human: cell==2, next: cell==3 || cell==4, clickable: clickable(cell), selected: x==selected[0] && y==selected[1]}" @click="clickHole(x, y, true)">
+    <div v-for="(cell, y) in row" :class="{void: cell<0, hole: cell>=0, ai: cell==1, human: cell==2, next: cell==3 || cell==4, clickable: clickable(cell), selected: x==selected[0] && y==selected[1]}" @click="clickHole(x, y, true)">
     </div>
   </div>
 </div>
 
 <div class="panel">
   <button @click="reset" :disabled="reset_disable" style="margin-top: 129.5px"><span class="material-symbols-rounded">close</span></button>
-  <div class="thinkball"><div :class="{water_fast: gameState == 1, water: gameState != 1}"></div></div>
+  <div class="thinkball">
+    <div class="water-real" :class="{fast: gameState == 1}"></div>
+    <div class="water-virtual" :class="{fast: gameState == 1}"></div>
+  </div>
   <button @click="submit" :disabled="submit_disable"><span class="material-symbols-rounded">done</span></button>
   
 </div>
@@ -341,31 +344,10 @@ button[disabled]:hover {
   margin-top: 90.6px;
   background-color: white;
   opacity: 80%;
-}
-
-.idle {
-  width: 100%;
-  height: 8%;
-  top: 0;
-  left: 0;
-  margin-top: 22px;
-  background-color: #fccf79;
   overflow: hidden;
 }
 
-.water {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  opacity: 100%;
-  overflow: hidden;
-}
-
-.water::after {
-  content: '';
+.water-virtual {
   position: absolute;
   width: 150%;
   height: 150%;
@@ -373,21 +355,24 @@ button[disabled]:hover {
   left: 50%;
   border-radius: 42%;
   background-color: white;
-  animation: real 8s linear infinite;
+  animation: virtual linear infinite;
+  animation-duration: 8s;
 }
 
-@keyframes real {
+.water-virtual.fast {
+  animation-duration: 1.6s;
+}
+
+@keyframes virtual {
   0% {
     transform: translate(-50%, -66%) rotate(0deg);
   }
-
   100% {
     transform: translate(-50%, -66%) rotate(360deg);
   }
 }
 
-.water::before {
-  content: '';
+.water-real {
   position: absolute;
   width: 150%;
   height: 150%;
@@ -395,51 +380,20 @@ button[disabled]:hover {
   left: 50%;
   border-radius: 45%;
   background-color: #fccf79;
-  animation: virtual 10s linear infinite;
+  animation: real linear infinite;
+  animation-duration: 10s;
 }
 
-@keyframes virtual {
+.water-real.fast {
+  animation-duration: 2s;
+}
+
+@keyframes real {
   0% {
     transform: translate(-50%, -58%) rotate(0deg);
   }
-
   100% {
     transform: translate(-50%, -58%) rotate(360deg);
   }
-}
-
-.water_fast {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  opacity: 100%;
-  overflow: hidden;
-}
-
-.water_fast::after {
-  content: '';
-  position: absolute;
-  width: 150%;
-  height: 150%;
-  top: 0;
-  left: 50%;
-  border-radius: 42%;
-  background-color: white;
-  animation: real 1.6s linear infinite;
-}
-
-.water_fast::before {
-  content: '';
-  position: absolute;
-  width: 150%;
-  height: 150%;
-  top: 0;
-  left: 50%;
-  border-radius: 45%;
-  background-color: #fccf79;
-  animation: virtual 2s linear infinite;
 }
 </style>
