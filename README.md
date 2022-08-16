@@ -1,4 +1,4 @@
-# MarbleFish-A-Chinese-Checker-AI
+# MarbleFish: A Chinese Checkers AI
 
 ## A. Utility function
 
