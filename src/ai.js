@@ -9,7 +9,7 @@ onmessage = (ev) => {
         let child = step(snapshot, move)
         queue.push({'action': move, 'score': 0, 'next': child})
     }
-    while ((start_depth <= depth) && (queue.length > 1)) {
+    while (queue.length > 1) {
         v = 0
         for (let i = 0; i < queue.length; i++) {
             let el = queue.shift()
@@ -19,15 +19,23 @@ onmessage = (ev) => {
             queue.push(el)
         }
         queue.sort((a, b) => b['score']-a['score']) // large v -> small v
-        queue.splice(Math.round(queue.length/(2**start_depth))+1) // cut off tailing candidates for next depth search
+        if (start_depth == depth) break
+        queue.splice(Math.round(queue.length/(2*depth))+1) // cut off tail candidates for next iteration
         start_depth += 2
     }
-    postMessage({path: legalmoves[queue[0]['action']], v})
+    let candidates = []
+    for (let el of queue) {
+        if (el['score'] == v) candidates.push(el['action'])
+        else break
+    }
+    let move = candidates[Math.floor(Math.random()*candidates.length)] // add randomness
+    postMessage({path: legalmoves[move], v})
 }
 
-function alphabeta(player, state, a, b, depth, digged) {
-    let v = score(state)
-    if (depth == 0 || (player == 2 && checkEnd(state))) return v
+function alphabeta(player, state, a, b, depth, dug) {
+    let result = checkEnd(state)
+    let end = result['player1'] || result['player2']
+    if (depth == 0 || (player == 2 && end)) return score(state)
     let legalmoves = getLegalMoves(state, player)
     let queue = []
     for (let move in legalmoves) {
@@ -36,26 +44,29 @@ function alphabeta(player, state, a, b, depth, digged) {
     }
     if (player == 1) queue.sort((a, b) => b['score']-a['score'])
     else queue.sort((a, b) => a['score']-b['score']) 
-    queue.splice(Math.round(queue.length/(2**digged))+1) // reduce complexity
+    queue.splice(Math.round(queue.length/(2**dug))+1) // reduce complexity
+    let v = player == 1 ? 0 : 1000
     for (let el of queue) {
-        let score = alphabeta(3-player, el['next'], a, b, depth-1, digged+1)
+        let score = alphabeta(3-player, el['next'], a, b, depth-1, dug+1)
         if (player == 1) {
-            if (score > a) a = score
-            if (a >= b) return a
+            v = Math.max(v, score)
+            if (v > b || (v == b && dug > 1)) return v // for exact value on second layer
+            a = Math.max(a, v)
         }
         else {
-            if (score < b) b = score
-            if (a >= b) return b
+            v = Math.min(v, score)
+            if (a > v || (a == v && dug > 1)) return v
+            b = Math.min(b, v)
         }
     }
-    return player == 1 ? a : b
+    return v
 }
 
-function copy(from, to) {
+export function copy(from, to) {
     for (let i = 0; i < 17; i++) {
-      for (let j = 0; j < 17; j++) {
-        to[i][j] = from[i][j]
-      }
+        for (let j = 0; j < 17; j++) {
+            to[i][j] = from[i][j]
+        }
     }
 }
 
@@ -74,27 +85,25 @@ function step(state, move) {
     return new_state
 }
 
-function getNext(state, x, y, first) {
+export function getNext(state, x, y, first) {
     let all_dir = [[-1, -1], [-1, 1], [0, -2], [0, 2], [1, -1], [1, 1]]
     let crawls = []
     let jumps = []
     for (let dir of all_dir) {
-      let dir_x = dir[0]
-      let dir_y = dir[1]
-      let nei_x = x + dir_x
-      let nei_y = y + dir_y
-      if (nei_x > 16 || nei_x < 0 || nei_y > 16 || nei_y < 0) continue
-      if (state[nei_x][nei_y] == 0 && first) { // first move can crawl
-        crawls.push([nei_x, nei_y])
-      }
-      else if (state[nei_x][nei_y] > 0) {
-        let jump_x = nei_x + dir_x
-        let jump_y = nei_y + dir_y
-        if (jump_x > 16 || jump_x < 0 || jump_y > 16 || jump_y < 0) continue
-        if (state[jump_x][jump_y] == 0) {
-          jumps.push([jump_x, jump_y])
+        let dir_x = dir[0]
+        let dir_y = dir[1]
+        let nei_x = x + dir_x
+        let nei_y = y + dir_y
+        if (nei_x > 16 || nei_x < 0 || nei_y > 16 || nei_y < 0) continue
+        if (state[nei_x][nei_y] == 0 && first) { // first move can crawl
+            crawls.push([nei_x, nei_y])
         }
-      }
+        else if (state[nei_x][nei_y] > 0) {
+            let jump_x = nei_x + dir_x
+            let jump_y = nei_y + dir_y
+            if (jump_x > 16 || jump_x < 0 || jump_y > 16 || jump_y < 0) continue
+            if (state[jump_x][jump_y] == 0) jumps.push([jump_x, jump_y])
+        }
     }
     return {crawls, jumps}
 }
@@ -168,17 +177,17 @@ function score(state) {
     return s
 }
 
-function checkEnd(state) {
-    let result = {ai: 1, player: 1}
+export function checkEnd(state) {
+    let result = {player1: 1, player2: 1}
     for (let i = 0; i < 17; i++) {
-      for (let j = 0; j < 17; j++) {
-        if (i < 4 && state[i][j] !== -1 && state[i][j] !== 2) {
-          result['player'] = 0
+        for (let j = 0; j < 17; j++) {
+            if (i < 4 && state[i][j] !== -1 && state[i][j] !== 2) {
+                result['player2'] = 0
+            }
+            if (i > 12 && state[i][j] !== -1 && state[i][j] !== 1) {
+                result['player1'] = 0
+            }
         }
-        if (i > 12 && state[i][j] !== -1 && state[i][j] !== 1) {
-          result['ai'] = 0
-        }
-      }
     }
-    return result['ai'] || result['player']
-}
+    return result
+}  
