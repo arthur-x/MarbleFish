@@ -172,27 +172,25 @@ function showEmotion() {
 </script>
 
 <template>
-<main style="display: flex">
-
 <div class="panel">
-    <button @click="increaseDepth" :disabled="difficulty_disable" style="margin-top: 129.5px">
+    <button @click="increaseDepth" :disabled="difficulty_disable">
         <span class="material-symbols-rounded">{{depth == 2 ? 'icecream' : depth == 4 ? 'fitness_center' : 'skull'}}</span>
     </button>
-    <span class="material-symbols-rounded" style="margin-top: 87.1px; font-size: 55px">{{showEmotion()}}</span>
-    <button @click="restart" :disabled="restart_disable" style="margin-top: 87.1px">
+    <span class="material-symbols-rounded" style="font-size: var(--emotion-size); line-height: var(--button-size)">{{showEmotion()}}</span>
+    <button @click="restart" :disabled="restart_disable">
         <span class="material-symbols-rounded">refresh</span>
     </button>
 </div>
 
 <div class="board">
-    <div v-for="(row, x) in board" style="display: flex; margin-bottom: 4.64px;">
+    <div v-for="(row, x) in board" style="display: flex; height: var(--row-height); justify-content: center; align-items: center;">
         <div v-for="(cell, y) in row" :class="{void: cell<0, hole: cell>=0, player1: cell==1, player2: cell==2, next: cell==3 || cell==4, clickable: clickable(cell), selected: x==selected[0] && y==selected[1]}" @click="clickHole(x, y, true)">
         </div>
     </div>
 </div>
 
 <div class="panel">
-    <button @click="reset" :disabled="reset_disable" style="margin-top: 129.5px">
+    <button @click="reset" :disabled="reset_disable">
         <span class="material-symbols-rounded">close</span>
     </button>
     <div class="thinkball">
@@ -203,25 +201,23 @@ function showEmotion() {
         <span class="material-symbols-rounded">done</span>
     </button>
 </div>
-
-</main>
 </template>
 
 <style scoped>
 .board {
     display: flex;
     flex-direction: column;
-    place-items: center;
+    justify-content: center;
 }
 
 .void {
-    width: 10px;
-    height: 10px;
+    width: calc(var(--hole-size) / 3);
+    height: calc(var(--hole-size) / 3);
 }
 
 .hole {
-    width: 30px;
-    height: 30px;
+    width: var(--hole-size);
+    height: var(--hole-size);
     border-radius: 50%;
     background-color: white;
 }
@@ -251,16 +247,19 @@ function showEmotion() {
 }
 
 .panel {
-    width: 130px;
+    width: calc(4 * var(--hole-size));
     display: flex;
     flex-direction: column;
-    place-items: center;
+    align-items: center;
+    justify-content: space-evenly;
 }
 
 button {
-    width: 48px;
-    height: 48px;
-    margin-top: 90.6px;
+    width: var(--button-size);
+    height: var(--button-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
     border: transparent;
     background-color: #cf925c;
@@ -282,15 +281,15 @@ button[disabled]:hover {
     'FILL' 1,
     'wght' 700,
     'GRAD' 200,
-    'opsz' 48
+    'opsz' 48;
+    font-size: calc(var(--button-size) / 2);
 }
 
 .thinkball {
-    width: 48px;
-    height: 48px;
+    width: var(--button-size);
+    height: var(--button-size);
     position: relative;
     border-radius: 50%;
-    margin-top: 90.6px;
     background-color: white;
     opacity: 80%;
     overflow: hidden;
@@ -344,5 +343,9 @@ button[disabled]:hover {
     100% {
         transform: translate(-50%, -58%) rotate(360deg);
     }
+}
+
+::selection {
+    background: inherit;
 }
 </style>

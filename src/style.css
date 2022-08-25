@@ -13,6 +13,11 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  --row-height: calc(90vh / 17);
+  --hole-size: calc(var(--row-height) / 1.732 * 1.5);
+  --button-size: calc(1.6 * var(--hole-size));
+  --emotion-size: calc(var(--button-size) * 1.15);
 }
 
 a {
@@ -47,9 +52,10 @@ h1 {
 }
 
 #app {
+  height: 100vh;
   max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin: auto;
+  display: flex;
   text-align: center;
 }
 
