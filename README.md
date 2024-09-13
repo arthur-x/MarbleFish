@@ -1,6 +1,6 @@
 # MarbleFish: A Chinese Checkers AI
 
-> **Note**
+> [!Note]
 >
 > The original code (written in Python 2.x) of this repository has been moved under the `legacy` branch. Refer to readme there for a detailed algorithm design documentation.
 
